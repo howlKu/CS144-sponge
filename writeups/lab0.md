@@ -1,7 +1,7 @@
 Lab 0 Writeup
 =============
 
-My name: [your name here]
+My name: [howlKu]
 
 My SUNet ID: [your sunetid here]
 
