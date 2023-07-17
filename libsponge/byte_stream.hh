@@ -19,13 +19,16 @@ class ByteStream {
     std::string byte_stream;
 
     size_t capacity;
+    
     size_t written_bytes;
+    
     size_t read_bytes;
     bool end_write;
     bool end_read;
 
     bool _error{};  //!< Flag indicating that the stream suffered an error.
-
+    
+    
   public:
     //! Construct a stream with room for `capacity` bytes.
     ByteStream(const size_t capacity);
@@ -87,6 +90,9 @@ class ByteStream {
     //! Total number of bytes popped
     size_t bytes_read() const;
     //!@}
+    
+    std::string output() const;
+
 };
 
 #endif  // SPONGE_LIBSPONGE_BYTE_STREAM_HH
