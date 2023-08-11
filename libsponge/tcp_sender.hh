@@ -15,6 +15,13 @@
 //! segments, keeps track of which segments are still in-flight,
 //! maintains the Retransmission Timer, and retransmits in-flight
 //! segments if the retransmission timer expires.
+struct Retransmission_Timer{
+    size_t millisec;
+    bool timer_running_flag;
+    
+    Retransmission_Timer( int msec, bool flag): millisec(msec), timer_running_flag(flag){}
+};
+
 class TCPSender {
   private:
     //! our initial sequence number, the number for our SYN.
@@ -22,15 +29,28 @@ class TCPSender {
 
     //! outbound queue of segments that the TCPSender wants sent
     std::queue<TCPSegment> _segments_out{};
+    std::queue<TCPSegment> _segments_out_unacked{};
 
     //! retransmission timer for the connection
     unsigned int _initial_retransmission_timeout;
+    unsigned int RTO;
+    
+    size_t _consecutive_retransmission_times{0};
+    Retransmission_Timer _timer;
 
     //! outgoing stream of bytes that have not yet been sent
     ByteStream _stream;
 
     //! the (absolute) sequence number for the next byte to be sent
     uint64_t _next_seqno{0};
+    uint64_t _abs_ackno{0};
+    
+    bool _syn = false;
+    bool _fin = false;
+    
+    size_t _receiver_window_size{1};
+    size_t _bytes_in_flight{0};
+    
 
   public:
     //! Initialize a TCPSender
@@ -46,6 +66,10 @@ class TCPSender {
 
     //! \name Methods that can cause the TCPSender to send a segment
     //!@{
+
+
+    void send_TCPSegment(TCPSegment &tcp_seg);
+
 
     //! \brief A new acknowledgment was received
     void ack_received(const WrappingInt32 ackno, const uint16_t window_size);
@@ -66,7 +90,7 @@ class TCPSender {
     //! \brief How many sequence numbers are occupied by segments sent but not yet acknowledged?
     //! \note count is in "sequence space," i.e. SYN and FIN each count for one byte
     //! (see TCPSegment::length_in_sequence_space())
-    size_t bytes_in_flight() const;
+    size_t bytes_in_flight() const { return _bytes_in_flight; }
 
     //! \brief Number of consecutive retransmissions that have occurred in a row
     unsigned int consecutive_retransmissions() const;
